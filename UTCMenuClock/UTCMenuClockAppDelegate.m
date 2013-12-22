@@ -70,7 +70,7 @@ NSMenuItem *showTimeZoneItem;
         [sender setState:NSOffState];
         [standardUserDefaults setBool:FALSE forKey:preference];
     }
-
+    [self doDateUpdate];
 }
 
 - (void) openGithubURL:(id)sender {
@@ -80,7 +80,6 @@ NSMenuItem *showTimeZoneItem;
 
 
 - (void) doDateUpdate {
-
     NSDate* date = [NSDate date];
     NSDateFormatter* UTCdf = [[[NSDateFormatter alloc] init] autorelease];
     NSDateFormatter* UTCdateDF = [[[NSDateFormatter alloc] init] autorelease];
@@ -95,15 +94,10 @@ NSMenuItem *showTimeZoneItem;
     [UTCdaynum setTimeZone: UTCtz];
 
     BOOL showDate = [self fetchBooleanPreference:@"ShowDate"];
-    BOOL showSeconds = [self fetchBooleanPreference:@"ShowSeconds"];
     BOOL showJulian = [self fetchBooleanPreference:@"ShowJulianDate"];
     BOOL showTimeZone = [self fetchBooleanPreference:@"ShowTimeZone"];
     
-    if (showSeconds){
-        [UTCdf setDateFormat: @"HH:mm:ss"];
-    } else {
-        [UTCdf setDateFormat: @"HH:mm"];
-    }
+    [UTCdf setDateFormat: @"HH:mm"];
 
     [UTCdateDF setDateStyle:NSDateFormatterFullStyle];
     [UTCdateShortDF setDateStyle:NSDateFormatterShortStyle];
@@ -145,7 +139,7 @@ NSMenuItem *showTimeZoneItem;
     NSFontPanel *fontPanel = [fontManager fontPanel:YES];
     [fontPanel makeKeyAndOrderFront:sender];
 }
-// this is the main work loop, fired on 1s intervals.
+// this is the main work loop, fired on 60s intervals.
 - (void) fireTimer:(NSTimer*)theTimer {
     [self doDateUpdate];
 }
@@ -165,8 +159,7 @@ NSMenuItem *showTimeZoneItem;
 
         [standardUserDefaults setBool:TRUE forKey:@"ShowTimeZone"];
         [showTimeZoneItem setState:NSOnState];
-    }    
-    [self doDateUpdate];
+    }
 
 }
 
@@ -200,7 +193,6 @@ NSMenuItem *showTimeZoneItem;
     NSMenuItem *quitItem = [[[NSMenuItem alloc] init] autorelease];
     NSMenuItem *launchItem = [[[NSMenuItem alloc] init] autorelease];
     NSMenuItem *showDateItem = [[[NSMenuItem alloc] init] autorelease];
-    NSMenuItem *showSecondsItem = [[[NSMenuItem alloc] init] autorelease];
     NSMenuItem *showJulianItem = [[[NSMenuItem alloc] init] autorelease];
  //   NSMenuItem *changeFontItem = [[[NSMenuItem alloc] init] autorelease];
     
@@ -227,10 +219,6 @@ NSMenuItem *showTimeZoneItem;
     [showDateItem setEnabled:TRUE];
     [showDateItem setAction:@selector(togglePreference:)];
 
-    [showSecondsItem setTitle:@"Show Seconds"];
-    [showSecondsItem setEnabled:TRUE];
-    [showSecondsItem setAction:@selector(togglePreference:)];
-    
     [showJulianItem setTitle:@"Show Julian Date"];
     [showJulianItem setEnabled:TRUE];
     [showJulianItem setAction:@selector(togglePreference:)];
@@ -260,7 +248,6 @@ NSMenuItem *showTimeZoneItem;
 
     // showDateItem
     BOOL showDate = [self fetchBooleanPreference:@"ShowDate"];
-    BOOL showSeconds = [self fetchBooleanPreference:@"ShowSeconds"];
     BOOL showJulian = [self fetchBooleanPreference:@"ShowJulianDate"];
     BOOL showTimeZone = [self fetchBooleanPreference:@"ShowTimeZone"];
     
@@ -269,12 +256,6 @@ NSMenuItem *showTimeZoneItem;
         [showDateItem setState:NSOnState];
     } else {
         [showDateItem setState:NSOffState];
-    }
-
-    if (showSeconds) {
-        [showSecondsItem setState:NSOnState];
-    } else {
-        [showSecondsItem setState:NSOffState];
     }
 
     if (showJulian) {
@@ -302,7 +283,6 @@ NSMenuItem *showTimeZoneItem;
 
     [mainMenu addItem:launchItem];
     [mainMenu addItem:showDateItem];
-    [mainMenu addItem:showSecondsItem];
     [mainMenu addItem:showJulianItem];
     [mainMenu addItem:showTimeZoneItem];
   //  [mainMenu addItem:changeFontItem];
@@ -312,13 +292,19 @@ NSMenuItem *showTimeZoneItem;
 
     [theItem setMenu:(NSMenu *)mainMenu];
 
-    // Update the date immediately after setup so that there is no timer lag
+    // Find the start of the next minute to begin updates
+    NSCalendar *calendar = [NSCalendar currentCalendar];
+    NSDateComponents *comps = [calendar components: NSEraCalendarUnit|NSYearCalendarUnit| NSMonthCalendarUnit|NSDayCalendarUnit|NSHourCalendarUnit|NSMinuteCalendarUnit fromDate: [NSDate date]];
+    [comps setMinute: [comps minute] + 1];
+    NSDate *nextMinute = [calendar dateFromComponents:comps];
+
+    // Update the display every minute with 5 seconds of tolerance
+    NSTimer *timer = [[NSTimer alloc] initWithFireDate:nextMinute interval:60.0 target:self selector:@selector(fireTimer:) userInfo:nil repeats:YES];
+    timer.tolerance = 5.0;
+    [[NSRunLoop currentRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
+
+    // Update the date immediately after setup since we're waiting for the minute to do it
     [self doDateUpdate];
-
-    NSNumber *myInt = [NSNumber numberWithInt:1];
-    [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(fireTimer:) userInfo:myInt repeats:YES];
-
-
 }
 
 @end
