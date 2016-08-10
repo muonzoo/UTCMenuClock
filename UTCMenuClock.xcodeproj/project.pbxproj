@@ -126,7 +126,6 @@
 				A8B1189D1471AE3A008A993B /* UTCMenuClockAppDelegate.m */,
 				A8B118BF1471EB12008A993B /* LaunchAtLoginController */,
 				A8B1189F1471AE3A008A993B /* MainMenu.xib */,
-				DA1B0A0A1822FCFF00C57253 /* Images.xcassets */,
 				A8B118911471AE3A008A993B /* Supporting Files */,
 			);
 			path = UTCMenuClock;
@@ -247,7 +246,6 @@
 				A8B118951471AE3A008A993B /* InfoPlist.strings in Resources */,
 				A8B1189B1471AE3A008A993B /* Credits.rtf in Resources */,
 				A8B118A11471AE3A008A993B /* MainMenu.xib in Resources */,
-				DA1B0A0B1822FCFF00C57253 /* Images.xcassets in Resources */,
 				A8B119271471EB13008A993B /* README.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
