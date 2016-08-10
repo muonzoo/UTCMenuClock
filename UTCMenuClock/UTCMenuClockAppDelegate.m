@@ -87,7 +87,7 @@ NSMenuItem *showTimeZoneItem;
     NSDateFormatter* UTCdateShortDF = [[[NSDateFormatter alloc] init] autorelease];
     NSDateFormatter* UTCdaynum = [[[NSDateFormatter alloc] init] autorelease];
     
-    NSTimeZone* UTCtz = [NSTimeZone timeZoneWithAbbreviation:@"GMT"];
+    NSTimeZone* UTCtz = [NSTimeZone timeZoneWithAbbreviation:@"UTC"];
 
     [UTCdf setTimeZone: UTCtz];
     [UTCdateDF setTimeZone: UTCtz];
@@ -98,11 +98,14 @@ NSMenuItem *showTimeZoneItem;
     BOOL showSeconds = [self fetchBooleanPreference:@"ShowSeconds"];
     BOOL showJulian = [self fetchBooleanPreference:@"ShowJulianDate"];
     BOOL showTimeZone = [self fetchBooleanPreference:@"ShowTimeZone"];
+    BOOL showOnlyHour = [self fetchBooleanPreference:@"ShowOnlyHour"];
     
     if (showSeconds){
-        [UTCdf setDateFormat: @"HH:mm:ss"];
+      [UTCdf setDateFormat: @"HH:mm:ss"];
+    } else if (showOnlyHour) {
+      [UTCdf setDateFormat: @"HH"];
     } else {
-        [UTCdf setDateFormat: @"HH:mm"];
+      [UTCdf setDateFormat: @"HH:mm"];
     }
 
     [UTCdateDF setDateStyle:NSDateFormatterFullStyle];
@@ -123,7 +126,7 @@ NSMenuItem *showTimeZoneItem;
     }
     
     if (showTimeZone) { 
-        UTCTzString = @" UTC";
+        UTCTzString = @"Z";
     } else { 
         UTCTzString = @"";
     }
@@ -202,6 +205,7 @@ NSMenuItem *showTimeZoneItem;
     NSMenuItem *showDateItem = [[[NSMenuItem alloc] init] autorelease];
     NSMenuItem *showSecondsItem = [[[NSMenuItem alloc] init] autorelease];
     NSMenuItem *showJulianItem = [[[NSMenuItem alloc] init] autorelease];
+    NSMenuItem *showHourOnlyItem = [[[NSMenuItem alloc] init] autorelease];
  //   NSMenuItem *changeFontItem = [[[NSMenuItem alloc] init] autorelease];
     
     showTimeZoneItem = [[[NSMenuItem alloc] init] autorelease];
@@ -212,9 +216,9 @@ NSMenuItem *showTimeZoneItem;
     
     [mainItem setTitle:@""];
 
-    [cp1Item setTitle:@"UTC Menu Clock v1.2"];
+    [cp1Item setTitle:@"UTC Menu Clock v1.2.1"];
     [cp2Item setTitle:@"jna@retina.net"];
-    [cp3Item setTitle:@"http://github.com/netik/UTCMenuClock"];
+    [cp3Item setTitle:@"http://github.com/muonzoo/UTCMenuClock"];
 
     [cp3Item setEnabled:TRUE];
     [cp3Item setAction:@selector(openGithubURL:)];
@@ -238,7 +242,11 @@ NSMenuItem *showTimeZoneItem;
     [showTimeZoneItem setTitle:@"Show Time Zone"];
     [showTimeZoneItem setEnabled:TRUE];
     [showTimeZoneItem setAction:@selector(togglePreference:)];
-    
+
+    [showHourOnlyItem setTitle:@"Show Only Hour"];
+    [showHourOnlyItem setEnabled:TRUE];
+    [showHourOnlyItem setAction:@selector(togglePreference:)];
+
  //   [changeFontItem setTitle:@"Change Font..."];
   //  [changeFontItem setAction:@selector(showFontMenu:)];
     
@@ -263,6 +271,7 @@ NSMenuItem *showTimeZoneItem;
     BOOL showSeconds = [self fetchBooleanPreference:@"ShowSeconds"];
     BOOL showJulian = [self fetchBooleanPreference:@"ShowJulianDate"];
     BOOL showTimeZone = [self fetchBooleanPreference:@"ShowTimeZone"];
+    BOOL showHourOnly = [self fetchBooleanPreference:@"ShowHourOnly"];
     
     // TODO: DRY this up a bit. 
     if (showDate) {
@@ -288,6 +297,11 @@ NSMenuItem *showTimeZoneItem;
     } else {
         [showTimeZoneItem setState:NSOffState];
     }
+    if (showHourOnly) {
+      [showHourOnlyItem setState:NSOnState];
+    } else {
+      [showHourOnlyItem setState:NSOffState];
+    }
     
     // latsly, deal with Launch at Login
     LaunchAtLoginController *launchController = [[LaunchAtLoginController alloc] init];
@@ -305,6 +319,7 @@ NSMenuItem *showTimeZoneItem;
     [mainMenu addItem:showSecondsItem];
     [mainMenu addItem:showJulianItem];
     [mainMenu addItem:showTimeZoneItem];
+    [mainMenu addItem:showHourOnlyItem];
   //  [mainMenu addItem:changeFontItem];
     // "---"
     [mainMenu addItem:sep4Item];
